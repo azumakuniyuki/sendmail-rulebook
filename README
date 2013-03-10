@@ -27,7 +27,8 @@
     *.db:
         Run makemap a specified database map.
 
-    clean:  Remove temporary files and directories.
+    clean:
+        Remove temporary files and directories.
 
      _       _        _                                                
   __| | __ _| |_ __ _| |__   __ _ ___  ___   _ __ ___   __ _ _ __  ___ 
@@ -40,20 +41,20 @@ rulebook
     The name list of sendmail features  for the control of each ruleset. It
     is the core database  of the sendmail-rulebook system.  It controls the 
     execution of the ruleset by using following RHS: ON/OFF/LOG/TEST/SCORE.
-    This database map is defined at the lib_rulebook.m4, is referred in the
-    isExecutable.
+    This database map is defined at the lib/rulebook.m4, is referred in the
+    ``can'' ruleset.
 
 cctable
     The list of ISO-3166 Country Codes(A2 Codes).  It's useful to accept or
     reject connections by the country name (A2 Code) . This database map is
-    referred in ccCtl ruleset.
+    referred in ``countryroads'' ruleset.
 
 dnszonetable
     The list of  DNS-Based Blocklist, Whitelist,  and IP GeoLocation zones. 
     The dnszonetable hold some LHSBLs (Left-Hand-Side Block lists, IP-Based
     Listing), RHSBLs (Right-Hand-Side Block Lists, Hostname-Based Listing),
-    LHSWLs (White lists), and RHSWLs (White lists).  Ruleset dnszCtl, lhsbl 
-    rhsbl and ccCtl refer this database map.
+    LHSWLs (White lists), and RHSWLs (White lists).  Ruleset dnszctl, lhsbl 
+    rhsbl and countryroads refer this database map.
 
 sendermt
     The sendermt is the mailertable.  Sendmail decides a next host or a de-
@@ -63,8 +64,8 @@ sendermt
 zzz 
     Database map zzz defines  sleeping time of each sender, each recipient.
     Sendmail decides whether to delivery or not by using this database map.
-    This database map is defined at sleeping_dictionary.m4,  is referred in
-    sleepingDictionary ruleset.
+    This database map is defined at goodnight.m4,  is referred in goodnight
+    ruleset.
 
       _                  __ _ _           
   ___| | __ _ ___ ___   / _(_) | ___  ___ 
