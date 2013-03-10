@@ -1,0 +1,16 @@
+###  $Id: local-site-names,v 5.9 2008/04/01 07:55:54 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       local-site-names -- List of local site's domains.               ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       List of domains which are in the local site. These domain names ###
+###       are loaded to the class macro {lsHost}  when sendmail starting. ###
+###       This class macro is defined at lib/rulebook.m4 file.            ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       islocal, islocalcn                                              ###
+###                                                                       ###
+#############################################################################
+localhost

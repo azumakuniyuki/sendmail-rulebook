@@ -1,0 +1,42 @@
+###  $Id: zzz,v 5.1 2007/09/03 09:16:01 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       zzz -- Sleeping Time Table of goodnight filter.                 ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       Database map zzz defines sleeping time of each sender, each re- ###
+###       cipient. This db map is defined at goodnight.m4, is referred in ###
+###       ``goodnight'' ruleset.                                          ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       goodnight                                                       ###
+###                                                                       ###
+###  MAKEMAP                                                              ###
+###       % cd /etc/mail/map                                              ###
+###       % test -e Makefile && gmake zzz.db || makemap hash zzz < zzz    ###
+###                                                                       ###
+###  FORMAT                                                               ###
+###       LHS            = ADDRESS-SPEC                                   ###
+###       ADDRESS-SPEC   = "@" -- Default Sleeping Time                   ###
+###                      = "From:" ADDRESS -- Envelope sender address     ###
+###                      = "To:" ADDRESS   -- Envelope recipient address  ###
+###       ADDRESS        = local-part "@" domain-part                     ###
+###                      = domain-part / [-.0-9A-Za-z]+                   ###
+###                                                                       ###
+###       RHS            = BEGINNING-TIME "<>" END-TIME                   ###
+###                      = "SLEEP" -- Anytime sleeping                    ###
+###                      = "AWAKE" -- Cannot sleep anytime                ###
+###       BEGINNING-TIME = HOUR ":" MINUTE                                ###
+###       END-TIME       = HOUR ":" MINUTE                                ###
+###       HOUR           = [0-2][0-9]                                     ###
+###       MINUTE         = [0-5][0-9]                                     ###
+###                                                                       ###
+#############################################################################
+# From:example.jp		00:00<>08:00
+# From:postmaster@example.jp	AWAKE
+# From:dev-null@example.jp	SLEEP
+# To:example.com		23:45<>09:15
+# To:mailer-daemon@example.com	AWAKE
+# To:.uk			08:00<>05:00
+# @				02:00<>04:00

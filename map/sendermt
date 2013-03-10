@@ -1,0 +1,39 @@
+###  $Id: sendermt,v 5.11 2008/04/03 08:16:01 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       sendermt -- The mailertable based on the envelope sender addr.  ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       The sendermt is a mailertable.  A route or  a delivery agent is ###
+###       decided with a envelope  sender address. This db map is defined ###
+###       at the sendermt.m4 file, is referred in the sendermt ruleset.   ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       sendermt                                                        ###
+###                                                                       ###
+###  MAKEMAP                                                              ###
+###       % cd /etc/mail/map                                              ###
+###       % test -e Makefile && gmake sendermt.db || \                    ###
+###         makemap hash sendermt.db < sendermt                           ###
+###                                                                       ###
+###  FORMAT                                                               ###
+###       LHS                     = ENVELOPE-SENDER-ADDRESS               ###
+###                               = ENVELOPE-SENDER-DOMAIN                ###
+###       ENVELOPE-SENDER-ADDRESS = local-part "@" domain-part            ###
+###       ENVELOPE-SENDER-DOMAIN  = domain-part                           ###
+###                                                                       ###
+###       RHS                     = DELIVERY-AGENT ":" RELAY-HOST         ###
+###       DELIVERY-AGENT          = String defined by 'M' Command         ###
+###       RELAY-HOST              = HOSTNAME                              ###
+###                               = "[" HOSTNAME "]"                      ###
+###       HOSTNAME                = Hostname / [.0-9A-Za-z]+              ###
+###                               = IPv4 Address / [.0-9]+                ###
+###                                                                       ###
+###  SEE ALSO                                                             ###
+###       mailertable                                                     ###
+###                                                                       ###
+#############################################################################
+# root@example.jp	smtp:[172.23.24.25]
+# example.org		relay:[mx4.example.org]
+# jp			esmtp:jp-smtp-gate.example.jp

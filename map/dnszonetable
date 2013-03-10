@@ -1,0 +1,592 @@
+###  $Id: dnszonetable,v 5.17 2008/01/23 04:37:22 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       dnszonetable -- The Table of DNS(BL,WL,IP GeoLocation) Zones    ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       The dnszonetable is a table of LHSBL (Left-Hand-Side , IP-based ###
+###       lists),  RHSBL (Right-Hand-Side , Hostname-based lists) , White ###
+###       lists, and IP GeoLocation lists. Ruleset lhsbl and countryroads ###
+###       checks a client IP address,  Ruleset rhsbl checks a domain name ###
+###       of envelope sender address by using this database map.          ###
+###       This database map is defined at lib/resolv.m4 file, is reffered ###
+###       in the lhsbl, rhsbl, and countryroads ruleset.                  ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       lhsbl                                                           ###
+###       rhsbl                                                           ###
+###       countryroads                                                    ###
+###                                                                       ###
+###  MAKEMAP                                                              ###
+###       % cd /etc/mail/map                                              ###
+###       % test -e Makefile && gmake dnszonetable.db || \                ###
+###         makemap hash dnszonetable.db < dnszonetable                   ###
+###                                                                       ###
+###  FORMAT                                                               ###
+###       LHS          = ZONE-TYPE ":" RR-TYPE                            ###
+###                    = ORDER-NUMBER                                     ###
+###       ZONE-TYPE    = LHSBL -- LHS Blacklist Order                     ###
+###                    = LHSWL -- LHS Whitelist Order                     ###
+###                    = LHSGL -- IP GeoLocation Order                    ###
+###                    = RHSBL -- RHS Blacklist Order                     ###
+###                    = RHSWL -- RHS Whitelist Order                     ###
+###       RR-TYPE      = "@" -- The Threshold of Rejection                ###
+###                    = "A" -- 'A' Resource Record                       ###
+###                    = "TXT" -- 'TXT' Resource Record                   ###
+###       ORDER-NUMBER = ID Number of Zone /  [0-9]{1,}                   ###
+###                                                                       ###
+###       RHS          = THRESHOLD                                        ###
+###                    = ORDER                                            ###
+###                    = ID-NUMBER                                        ###
+###                    = ZONE-NAME                                        ###
+###       THRESHOLD    = The Threshold Number of Rejection / [0-9]+       ###
+###       ORDER        = Order of Resolving / [0-9]+[,[0-9]+...]          ###
+###       ID-NUMBER    = Zone Identifier / 4 Digits /[0-9]{4}             ###
+###       ZONE-NAME    = Zone Name / [.-0-9A-Za-z]+                       ###
+###                                                                       ###
+###  4TH DIGIT DEFINITION                                                 ###
+###       0XXX -- Local Configured Zones                                  ###
+###       1XXX -- LHS Blacklists                                          ###
+###       2XXX -- LHS Whitelists                                          ###
+###       3XXX -- LHS Another Lists                                       ###
+###       4XXX -- RHS Blacklists                                          ###
+###       5XXX -- RHS Whitelists                                          ###
+###       6XXX -- RHS Another Lists                                       ###
+###       7XXX -- IP GeoLocation Lists                                    ###
+###       8XXX --                                                         ###
+###       9XXX --                                                         ###
+###                                                                       ###
+###  SEE ALSO                                                             ###
+###       http://wiki.openrbl.org/wiki/LHSBL                              ###
+###       http://wiki.openrbl.org/wiki/Category:LHSBL                     ###
+###       http://wiki.openrbl.org/wiki/RHSBL                              ###
+###       http://wiki.openrbl.org/wiki/Category:RHSBL                     ###
+###       http://en.wikipedia.org/wiki/DNSBL                              ###
+###       http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists       ###
+###       http://directory.google.com/Top/Computers/Internet/Abuse/Spam/  ###
+###                                                                       ###
+#############################################################################
+
+## CONFIG ###################################################################
+# +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+
+# |L|H|S| |T|A|B|L|E| |C|O|N|F|I|G|
+# +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+
+# LHSBL:A	1,2,3,4,5
+# LHSBL:TXT	6,7
+# LHSBL:@	3 
+# LHSWL:A	8,9
+# LHSWL:@	1
+LHSBL:@		2
+LHSBL:A		1115,1123,1131,1181,1101,1171,1225
+LHSWL:@		1
+LHSWL:A		2001
+LHSGL:TXT	7031,7021
+
+# +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+
+# |R|H|S| |T|A|B|L|E| |C|O|N|F|I|G|
+# +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+
+# RHSBL:A	6,7,8,9,10
+# RHSBL:TXT	15,19
+# RHSBL:@	3
+# RHSWL:A	11,13
+# RHSWL:@	1
+RHSBL:@		2
+RHSBL:A		4001,4004,4031,4011,4121,4122
+RHSWL:@		0
+RHSWL:A		5011
+
+
+## LOCAL ZONES ##############################################################
+# 1	your.open-relay.dnsbl.example.jp
+# 2	your.dial-ups.dnsbl.example.jp
+
+#  _     _   _ ____  ____  _         
+# | |   | | | / ___|| __ )| |    ___ 
+# | |   | |_| \___ \|  _ \| |   / __|
+# | |___|  _  |___) | |_) | |___\__ \
+# |_____|_| |_|____/|____/|_____|___/
+#                                    
+#  * http://www.ordb.org/
+#  * 2006/12/31 ORDB.org is shutting down
+1001	relays.ordb.org.
+
+#  * http://www.mail-abuse.org/
+#  * http://www.mail-abuse.com/
+#  * http://jp.trendmicro.com/jp/products/enterprise/ers/ersa/index.html
+1005	blackholes.mail-abuse.org.
+1006	rbl.maps.vix.com.
+
+#  * http://www.sorbs.net/
+#  * http://www.hart.co.jp/spam/sorbs.html
+#  * All verson does not have permission to Rsync the SORBS data without pay-
+#    ing a tranfer fee and agreeing to the licensing of the data, he does not
+#    do either.
+#
+#  dnsbl             -- Unsolicited bulk/commercial email senders
+#  smtp.dnsbl        -- Open SMTP Relay Servers
+#  web.dnsbl         -- IP addresses with vulnerabilities that are ex-
+#                       ploitable by spammers
+#  spam.dnsbl        -- Hosts  that have sent  spam  to the  admins of
+#                       SORBS at any time
+#  escalations.dnsbl -- Netblocks  of  service  providers  believed to 
+#                       support spammers
+1101	dnsbl.sorbs.net.
+1102	smtp.dnsbl.sorbs.net.
+1103	web.dnsbl.sorbs.net.
+1104	spam.dnsbl.sorbs.net.
+1105	escalations.dnsbl.sorbs.net.
+
+#  * http://www.spamhaus.org/
+#  * http://www.spamhaus.org/datafeed/index.html
+#  * The Data Feed service is supplied as a yearly subscription, with a Serv-
+#    ice Level Agreement and Technical Support. Pricing is based on the total
+#    number of Email Users your organization  provides email service for, and
+#    the type of organization (commercial or non-profit). 
+#
+#  SBL -- Verified sources of spam, including spammers and their sup-
+#         port services
+#  XBL -- Illegal 3rd party exploits(e.g. open proxies, Trojan Horses)
+#  PBL -- All Static, dialup & DHCP IP address space that is not meant
+#         to be initiating SMTP connections
+#  Zen -- A single lookup for querying the SBL, XBL and PBL databases.
+#
+1111	sbl.spamhaus.org.
+1112	xbl.spamhaus.org.
+1113	pbl.spamhaus.org.
+1114	sbl-xbl.spamhaus.org.
+1115	zen.spamhaus.org.
+
+#  * http://www.rbl.jp/
+#
+#  virus -- The Anti-virus  RBL service  helps  reject  virus-infected
+#           mail sent directly from PCs which are virus-infected them-
+#           selves.
+#  short -- This service is  helpful to reject spam  sent from ADSL or
+#           or PPP connections which have dynamic IP addrs.
+#  all   -- This provides both  the above services of virus.rbl.jp and
+#           short.rbl.jp.
+#
+1121	virus.rbl.jp.
+1122	short.rbl.jp.
+1123	all.rbl.jp.
+
+4121	dyndns.rbl.jp.
+4122	url.rbl.jp.
+
+#  * http://www.dsbl.org/
+#  * rsync -t rsync.dsbl.org::dsbl/<file> .
+#
+#  list.DSBL.org        -- all single hop relays
+#  multihop.DSBL.org    -- the outputs of multihop relays(DANGER!)
+#  unconfirmed.DSBL.org -- all the output servers(DANGER!)
+#
+1131	list.dsbl.org.
+1132	multihop.dsbl.org.
+1133	unconfirmed.dsbl.org.
+
+#  * http://www.njabl.org/
+#  * rsync -vaL rsync.njabl.org::njabl/rbldnsd/ /var/dnsbl/njabl/
+#
+#  NJABL DNSBL         -- SMTP  open relays, Multi-stage SMTP open re-
+#                         lays,spam sources, Insecure CGI scripts that
+#                         allow open relaying, open proxy servers
+#  Bad Host, No Cookie -- These hosts  have done  things  proper  SMTP
+#                         servers don't do.
+1141	dnsbl.njabl.org.
+1142	bhnc.njabl.org.
+
+#  * http://cbl.abuseat.org/ 
+#  * Due to a hardware failure,  the website and master rsync server has been
+#    unavailable at times recently.
+#
+#  CBL -- Only IPs  exhibiting characteristics  specific to open prox-
+#         ies, spamware, etc. It is included in zen.spamhaus.org zone.
+#
+1151	cbl.abuseat.org.
+
+#  * http://ahbl.org/
+#  DNSbl ip4r Service -- See http://ahbl.org/docs/dnsbl
+1161	dnsbl.ahbl.org.
+
+#  * http://www.spamcop.net/
+#  * http://spamcop.net/fom-serve/cache/340.html
+#  * For this reason,  we provide  a more efficient option  of running a mir-
+#    rored server  through transfer using rsync and ssh.  You have the option
+#    of the mirror server  being public  or private as described below. rsync
+#    access is provided free of charge to sites willing to host a public mir-
+#    ror of the BL.  The bad news is that we charge $1000 per year per server
+#    for this service. To pay for private mirror access, make a $1000 payment
+#    through PayPal.
+#
+#  SpamCop(SCBL) -- IP addresses which have transmitted reported email
+#                   to SpamCop users.
+1171	bl.spamcop.net.
+
+#  * http://bbq.uso800.net/code.html
+1181	niku.2ch.net.
+
+#  * http://www.anti-spam.org.cn/
+#  * http://anti-spam.org.cn/forums/lofiversion/index.php/t1695.html
+#  * transfers: yes - rsync and http, see http://dsbl.org/usage
+#
+#  CBL  -- China spam blacklist is the collection and analysis and re-
+#          view  of the current spam source  The address malicious  or
+#          unintentional source of spam from the spam mail is a strong
+#          possibility.
+#  CDL  -- Dynamic Address table  is the collection  of statistics  in
+#          China (including Taiwan) dynamic allocation address. 
+#  CDL+ -- Collation and the CDL, CBL and CDL spam targeted at differ-
+#          ent situations, users can choose either one use or use.
+#
+#  DO NOT USE FOLLOWING ZONES
+#  * http://nikki.hart.co.jp/index.php?UID=1189489124
+# 1191	cbl.anti-spam.org.cn.
+# 1192	cdl.anti-spam.org.cn.
+# 1193	cblplus.anti-spam.org.cn.
+
+#  CML  -- China mail service operators  white list (CML)  mainly as a
+#          useful supplement to CBL/CBL+.
+2191	cml.anti-spam.org.cn.
+
+#  * http://www.habeas.com/en-US/Senders/Overview/
+#  * Large Receiver Partners such as ISPs,MSPs, or Antispam providers may ob-
+#    tain access to the SafeList  via rsync or zone transfer by submitting an
+#    email request to partners@habeas.com or by calling 650-694-3300.
+#
+#  hil.habeas.com -- Habeas Infringer List
+1201	hil.habeas.com.
+
+#  Habeas SafeList(Whitelist)
+#  accredit -- Habeas SafeList(query IP adddress permission level, in-
+#              cludes Registered but Non-Certified senders)
+#  hul      -- Habeas User List (contains only those  IP addresses ac-
+#              credited at permission levels 10 through 30)
+#  sohul    -- Including  Non-Verified-Optin ( contains  those  IP ad-
+#              dresses accredited at permission levels 10  through 50,
+#              but not 60 to 99)
+2201	accredit.habeas.com.
+2202	hul.habeas.com.
+2203	sohul.habeas.com.
+
+#  * http://www.moensted.dk/spam/no-more-funn/
+#  NO-MORE-FUNN -- dr. Jorgen Mashs DNSbl
+1211	no-more-funn.moensted.dk.
+
+#  * http://www.tqmcube.com/
+#  * http://tqmcube.com/files/dnsbl_lists.tar.bz2
+#  * rsync -t tqmcube.com::spamlists/[spam] [dhcp] [prc] [ko]
+#
+#  dhcp  -- Dynamic Ranges
+#  spam  -- Spam Trap
+#  ko    -- South Korea
+#  prc   -- China
+#  dnsbl -- Composite(all of above)
+#
+1221	dhcp.tqmcube.com.
+1222	spam.tqmcube.com.
+1223	ko.tqmcube.com.
+1224	prc.tqmcube.com.
+1225	dnsbl.tqmcube.com.
+
+#  * http://apews.org/
+#  Level 2: IP-Address Based Blocklist (LHSBL)
+1231	l2.apews.dnsbl.uceprotect.net.
+1232	l2.apews.dnsbl.sorbs.net.
+
+#  * http://psbl.surriel.com/
+#  * http://spamikaze.org/
+#  * http://psbl.surriel.com/howto/
+#  * rsync -z psbl-mirror.surriel.com::psbl/psbl.txt .
+1241	psbl.surriel.com.
+
+#  * http://dnsbl.rangers.eu.org/
+#  * Semi-Anonymous blocklist.
+#
+#  dnsbl       -- combined
+#  dynamic     -- generic IP range
+#  lame        -- misconfigured anti-virus scanner or content filter sending
+#                 false notifications
+#  spam        -- spam source
+#  spamsupport -- spam supporting ISP, see TXT record
+#  worm        -- virus/worm source 
+#
+1251	dnsbl.rangers.eu.org.
+1252	dynamic.dnsbl.rangers.eu.org.
+1253	lame.dnsbl.rangers.eu.org.
+1254	spam.dnsbl.rangers.eu.org.
+1255	spamsupport.dnsbl.rangers.eu.org.
+1256	worm.dnsbl.rangers.eu.org.
+
+#  * http://www.spambag.org/  -- DOES NOT WORK :-(
+#  * Personal Blocklist,somewhat aggressive against spam-tolerating networks
+#
+# 1261	blacklist.spambag.org
+
+#  * http://www.uceprotect.net/
+#  * The projectÅfs mission is to stop mail abuse, globally. 
+#  * WGET http://www.uceprotect.net/en/index.php?m=6&s=9
+#  * RSYNC http://www.uceprotect.net/en/index.php?m=6&s=10 
+#  * Blacklists are offered in  RBLDNSD format only.
+#
+# 1271	dnsbl-1.uceprotect.net
+# 1272	dnsbl-2.uceprotect.net
+# 1273	dnsbl-3.uceprotect.net
+
+#  * http://virbl.bit.nl/
+#  * ip addresses from which more than 2 viruses are received
+#  * http://virbl.bit.nl/faq.php
+#  * Can I fetch the zone using rsync?
+#  * Yes, you can. zonefiles are updated every 10 minutes. Available
+#    formats are:
+#    % rsync virbl.bit.nl::virbl/virbl.dnsbl.bit.nl (bind)
+#    % rsync virbl.bit.nl::virbl/rbldnsd-virbl.dnsbl.bit.nl (rbldnsd)
+#    % rsync virbl.bit.nl::virbl/virbl.dnsbl.bit.nl (plain text)
+1281	virbl.dnsbl.bit.nl.
+
+#  * http://www.wpbl.info/
+#  * Only individual IP addresses  that connect to us are listed,  not whole
+#    networks.
+#  * The public can not report spam. There are no manual additions. Our net-
+#    work passively detects all spam.
+#  * All entries are temporary and expire with time.
+#  * Any IP address  can be removed  by anyone  through our lookup facility.
+#  * We are NOT calling hosts  in our database spammers.   We are NOT saying
+#    you run  a spamming business.  In most cases,  sites become listed here
+#    after  they become infected  with a virus  or are compromised by an in-
+#    truder (open proxy). Most spam is sent without the knowledge or consent
+#    of site admins.  Securing your hosts and fixing  misconfigurations will 
+#    eliminate the spam.
+1291	db.wpbl.info.
+
+#  * http://www.spamrats.com/
+#  RATS-Dyna  -- Probable PC or home connection infected with a Trojan, Bot,
+#                or Emailer Program.
+#  RATS-NoPtr -- An IP Address  which has  no reverse DNS,  and probably the 
+#                home of a SpamBot
+#  RATS-Spam  -- An IP Address that has been shown to be abusive(Use at your
+#                own risk)
+1301	dyna.spamrats.com.
+1302	noptr.spamrats.com.
+1303	spam.spamrats.com.
+
+#  * http://spamcannibal.org/cannibal.cgi
+#  * SpamCannibal blocks spam  at the origination server  and can be config-
+#    ured to block DoS attacks. 
+#  * SpamCannibal is a free software toolkit  to help stop DoS attacks,  UBE
+#    (Unsolicited Bulk Email), UCE (Unsolicited Commercial Email), and other
+#    spam from reaching your network and your mail servers.  SpamCannibal is
+#    published  under the  GNU  General  Public License and is available for 
+#    download from CPAN.  For specific download instructions and links, open
+#    http://spamcannibal.org/cannibal.cgi
+#
+1311	bl.spamcannibal.org.
+
+#  * http://www.rurbl.ru/
+#  * dynamic antispam and antivirus on-line database
+#  * Here is non-free methods of access.
+#  * We offer access to  our database  with minimal quantum,  called "copy".
+#    The Copy consists  of our client  IP address.  From this address client
+#    can have full-speed access to following services:
+#    - Online check through standard RBL client using RBL domain db.rurbl.ru
+#    - DNS AXFR zone loading
+#    - Terms/Cost = 1 month/1299 RUR, 6 months/7499 RUR
+#
+1321	db.rurbl.ru.
+
+
+#  * http://www.dnswl.org/tech
+#  * You can download  dnswl.org data  in rbldnsd, Postfix  and BIND  formats
+#    using rsync. Examples:
+#     - rbldnsd: rsync --times rsync1.dnswl.org::dnswl/rbldnsd-* ./dokka
+#     - Postfix: rsync --times rsync1.dnswl.org::dnswl/postfix-* ./dokoka
+#     - BIND: rsync --times rsync1.dnswl.org::dnswl/bind-* /some/path/where
+#     - Notes/Domino: rsync --times rsync1.dnswl.org::dnswl/notes-* ./where
+#     - generic: rsync --times rsync1.dnswl.org::dnswl/generic-* /some/path/
+#  * It's usually sufficient  to download the data once or twice a day, since
+#    it does not change fast. Please do not schedule the download at the full
+#    or half hour, but use some random minute.
+#
+#  dnswl.org -- DNSWL.org provides a  Whitelist of known legitimate e-
+#               mail servers to reduce  the chances of false positives 
+#               while spam filtering. 
+2001	list.dnswl.org.
+
+#  * http://www.trusted-forwarder.org/
+#  * dig @dns.trusted-forwarder.org -t AXFR trusted-forwarder.org
+#  * You can also obtain it via rsync with the command:
+#   - rsync rsync://trusted-forwarder.org/ftp/master.trusted-forwarder.org .
+#  * Or, of you want to, you can fetch it via the web:
+#   - wget http://trusted-forwarder.org/master.trusted-forwarder.org
+2011	wl.trusted-forwarder.org.
+
+
+
+#  ____  _   _ ____  ____  _         
+# |  _ \| | | / ___|| __ )| |    ___ 
+# | |_) | |_| \___ \|  _ \| |   / __|
+# |  _ <|  _  |___) | |_) | |___\__ \
+# |_| \_\_| |_|____/|____/|_____|___/
+#                                    
+#  * http://rfc-ignorant.org/
+#  * http://www.rfc-ignorant.org/rsync.php
+#  * As of Dec 5, 2006, we have changed our rsync policy to allow greater ac-
+#    cess to our data. The process is now much simpler.
+#     -1. You Agree Not To Redistribute
+#     -2. You Agree Not To Abuse The System
+#     -3. The RFCI-NS List Is Your Friend
+#     -4. Choose your style
+#     -5. rsync From the Master
+#
+#  DSN(<>)    -- If  the publicly listed  MX record for domain refuses
+#                to accept  mail with  a originator  given as <>, then
+#                the domain will be considered  a viable candidate for 
+#                inclusion in the zone.
+#  postmaster -- If the right-hand-side  of an address does not have a
+#                postmaster address.
+#  abuse      -- RFC2142 is the first RFC to formally codify the long-
+#                standing  <abuse@domain.tld>  concept  which had long 
+#                existed mainly as a rule of thumb.
+#  bogusmx    -- If any publicly  listed MX record for domain contains
+#                a hostname  which points to  bogus  IP address space,
+#                such as those documented in RFC3330, or if the domain
+#                contains an MX RR  that points to  an IP address,  in
+#                violation  of  RFC1035 or  if the  domain has  MX RRs
+#                which point to hostnames which themselves do not have
+#                an associated A record (including MXs which return an
+#                NXDOMAIN, or which are CNAMEs)
+#
+4001	dsn.rfc-ignorant.org.
+4002	postmaster.rfc-ignorant.org.
+4003	abuse.rfc-ignorant.org.
+4004	bogusmx.rfc-ignorant.org.
+
+#  whois      -- RFC1032 specifies  that contact data  for domains can
+#                be found via the WHOIS system.
+#
+6001	whois.rfc-ignorant.org.
+
+#  * http://rhs.mailpolice.com/
+#  * If you use MailPolice lists,  help keep it free  by making a donation to
+#    help cover operational costs: PayPal
+#
+#  bulk    -- spam, bulk-senders, unconfirmed mailing-list, unsolicit-
+#             ited ad vertising sites
+#  porn    -- pornographic (18+) (web and email) sites
+#  fraud   -- domains and IPs  hosting fraudulant content,  also known
+#             as "phishing"
+#  block   -- consolidated  list of  bulk-senders,  pornographic,  and
+#             fraud sites
+#  dynamic -- dynamic PPP/DSL/cable  reverse DNS hostnames, useful for
+#             stopping spam from broadband proxies
+#  adult   -- adult-oriented sites
+#
+4011	bulk.rhs.mailpolice.com.
+4012	porn.rhs.mailpolice.com.
+4013	fraud.rhs.mailpolice.com.
+4014	block.rhs.mailpolice.com.
+4015	dynamic.rhs.mailpolice.com.
+4016	adult.rhs.mailpolice.com.
+
+#  * The lists below are not meant for blocking mail perse, but for identify-
+#    ing types of mail.
+#
+#  adv     -- domains of e-mail marketers,  such as opt-in advertisers
+#             and newsletters
+#  webmail -- domains used by webmail services
+#  redir   -- website redirectors
+#
+6011	adv.rhs.mailpolice.com.
+6012	webmail.rhs.mailpolice.com.
+6013	redir.rhs.mailpolice.com.
+
+#  * http://uribl.com/
+#  * Domain names appearing in spam
+4021	multi.uribl.com.
+
+#  * http://www.sorbs.net/
+#  * http://www.hart.co.jp/spam/sorbs.html
+#  * All verson does not have permission to Rsync the SORBS data without pay-
+#    ing a tranfer fee and agreeing to the licensing of the data, he does not
+#    do either.
+#
+#  rhsbl   -- Aggregate zone (contains all RHS zones)
+#  badconf -- List of domain names  where the A or MX records point to
+#             bad address space.
+#  nomail  -- List of domain names  where the owners have indicated no
+#             email should ever originate from these domains.
+#
+4031	rhsbl.sorbs.net.
+4032	badconf.rhsbl.sorbs.net.
+4033	nomail.rhsbl.sorbs.net.
+
+#  * http://apews.org/
+#  Level 1 -- Domain-Based Blockist (RHSBL)
+4231	l1.apews.rhsbl.uceprotect.net.
+
+
+#  * http://www.trusted-forwarder.org/
+#  * dig @dns.trusted-forwarder.org -t AXFR trusted-forwarder.org
+#  * You can also obtain it via rsync with the command:
+#   - rsync rsync://trusted-forwarder.org/ftp/master.trusted-forwarder.org .
+#  * Or, of you want to, you can fetch it via the web:
+#   - wget http://trusted-forwarder.org/master.trusted-forwarder.org
+5011	wl.trusted-forwarder.org.
+
+
+#  * http://support-intelligence.com/dob/
+#  * DOMAIN_NAME.dob.sibl.support-intelligence.com
+#  * The dob list is a DNSRBL  that contains  domains  registered within  the 
+#    last five days.  The list  is currently in  BETA and  should be used ac-
+#    cordingly. We still have some kinks in it and occasionally domains older
+#    than five days, or other important domains end up in the list.
+6020	dob.sibl.support-intelligence.com.
+
+
+#  ___ ____     ____            _                    _   _             
+# |_ _|  _ \   / ___| ___  ___ | |    ___   ___ __ _| |_(_) ___  _ __  
+#  | || |_) | | |  _ / _ \/ _ \| |   / _ \ / __/ _` | __| |/ _ \| '_ \ 
+#  | ||  __/  | |_| |  __/ (_) | |__| (_) | (_| (_| | |_| | (_) | | | |
+# |___|_|      \____|\___|\___/|_____\___/ \___\__,_|\__|_|\___/|_| |_|
+#                                                                      
+#  *  http://blackholes.us/
+#  * Those lists contain WHOLE countries, without exception.
+#  * *** DESPERATE FOR SECONDARIE ***
+#  * rsync -vurt -z4 rsync://rysnc.blackholes.us/zones/countries /dest-dir
+#  * rbldnsd format file = http://blackholes.us/zones/countries/countries.rbl
+7001	countries.blackholes.us.
+
+#  * http://routeviews.org/
+7011	asn.routeviews.org.
+7012	aspath.routeviews.org.
+
+#  * http://countries.nerd.dk/
+#  * rsync -vurt -z4 rsync://countries-ns.mdc.dk/zone ./
+#  * countries.nerd.dk(the zone) is a DNSBL(DNS blocklist) created for my own
+#    personal use. Other people started asking for access to it, so I decided
+#    to make it available to the world.
+7021	zz.countries.nerd.dk.
+
+#  * http://www.netop.org/geoip.html
+#  * NetOp runs a service that allows the public Internet to make DNSBL-style
+#    queries for a given IPv4 address's ISO 3166 country code, as stored in a
+#    TXT RR.   The server will return a TXT RR  containing the two-letter ISO 
+#    3166 country code.
+7031	country.netop.org.
+
+#  * http://www.ipdeny.com/
+#  * All country IP block files are provided in CIDR format, at this time.
+#  * Note: You may not re-distribute our files and any of our web site
+#          content, but you can freely use our generated IP zone files
+#          in  your  commercial  or freeware  solutions  or  services, 
+#          please read our Copyright policy and please comply with our
+#          Usage limits policy.
+
+#  * http://www.ipligence.com/en/products/community.php
+#  * This is a free product for  Non-Commercial use and  is subject to
+#    the IPligence  Community Edition  license.  Basically this is the
+#    only requirement:  You must link/credit ipligence.com back in any
+#    webpage or service using this product.
+
+
+

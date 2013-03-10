@@ -1,0 +1,176 @@
+### $Id: Makefile,v 5.51 2008/04/07 23:07:31 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       Makefile -- makefile(GNU) for Sendmail-Rulebook.                ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       It is useful to build database maps(*.db files), to fetch class ###
+###       files as a new file, to update database maps from master sites. ###
+###                                                                       ###
+#############################################################################
+
+# Define macros #############################################################
+SYSTEMNAME=	sendmail-rulebook
+SUPERUSER=	root
+WHEELGROUP=	wheel
+
+# Safe environment
+SHELL=		/bin/sh
+DIRNAME=	$(shell basename `pwd` )
+MAKEMAP=	$(shell which makemap) -sd
+# MAKEMAP=	/usr/local/sbin/makemap -sd
+# MAKEMAP=	/usr/local/sendmail/sbin/makemap -sd
+# MAKEMAP=	/another/path/to/makemap -sd
+CHOWN=		chown
+CHMOD=		chmod
+MKDIR=		mkdir -p
+TOUCH=		touch
+GREP=		grep
+TEST=		test
+ECHO=		echo
+SED=		sed
+CUT=		cut
+CP=		/bin/cp
+LS=		/bin/ls -1
+MV=		/bin/mv
+RM=		/bin/rm -f
+
+# Directories
+DIR_DST=	$(shell pwd )
+DIR_TMP=	/tmp/.rulebook.build
+
+# Configuration files
+CF_SENDMAILCF=	$(shell $(TEST) -f ../sendmail.cf && echo '../sendmail.cf' || echo 'NULL' )
+#CF_SENDMAILCF=	/etc/sendmail.cf
+#CF_SENDMAILCF=	/usr/local/sendmail/etc/mail/sendmail.cf
+#CF_SENDMAILCF=	/usr/local/etc/mail/sendmail.cf
+#CF_SENDMAILCF=	/var/lib/sendmail.cf
+#CF_SENDMAILCF=	/another/path/to/sendmail.cf
+
+CF_LOCKFILE=	/tmp/$(SYSTEMNAME).lf
+
+# Get a username and a group name from sendmail.cf
+ifneq ($(CF_SENDMAILCF), NULL)
+CONF_RUNASUSER=	$(shell ( $(GREP) '^O RunAsUser' $(CF_SENDMAILCF) || echo $(SUPERUSER):$(SUPERUSER) ) | $(CUT) -d= -f2 | $(CUT) -d: -f1 )
+# CONF_RUNASUSER=	$(SUPERUSER)
+TMP_RUNASGROUP=	$(shell ( $(GREP) '^O RunAsUser' $(CF_SENDMAILCF) || echo $(SUPERUSER):$(SUPERUSER) ) | $(CUT) -d= -f2 | $(CUT) -d: -f2 )
+else
+CONF_RUNASUSER=	$(SUPERUSER)
+TMP_RUNASGROUP=	$(SUPERUSER)
+endif
+
+# Check a group name
+CONF_RUNASGROUP=$(shell ( $(GREP) '^$(TMP_RUNASGROUP):' /etc/group || echo $(WHEELGROUP): ) | $(CUT) -d: -f1 )
+
+# Database map configurationo
+CONF_DBMAP_FORMAT=	hash
+ifneq ($(CF_SENDMAILCF), NULL)
+CONF_DBMAP_REQUIRED=	$(shell $(GREP) '^K' $(CF_SENDMAILCF) | $(GREP) $(DIRNAME) | $(SED) 's:.*/$(DIRNAME)/\(.*\):\1.db:g' )
+endif
+CONF_DBMAP_OWNER=	$(CONF_RUNASUSER)
+CONF_DBMAP_GROUP=	$(CONF_RUNASGROUP)
+ifeq ($(CONF_RUNASUSER), $(SUPERUSER))
+CONF_DBMAP_PERMISSION=	0644
+else
+CONF_DBMAP_PERMISSION=	0664
+endif
+
+# Class file configuration
+ifneq ($(CF_SENDMAILCF), NULL)
+CONF_CLASS_REQUIRED=	$(shell $(GREP) '^F' $(CF_SENDMAILCF) | $(GREP) $(DIRNAME) | $(SED) 's:.*/$(DIRNAME)/\(.*\):\1:g' )
+endif
+CONF_CLASS_OWNER=	$(CONF_RUNASUSER)
+CONF_CLASS_GROUP=	$(CONF_RUNASGROUP)
+ifeq ($(CONF_RUNASUSER), $(SUPERUSER))
+CONF_CLASS_PERMISSION=	0664
+else
+CONF_CLASS_PERMISSION=	0644
+endif
+
+# Database map files ##########################################################
+# Hostmaps contain many hostnames.
+HOST_DBMAPS=	cctable dnszonetable sendermt zzz
+SENDMAILRULEBOOK_DBMAPS+=rulebook.db
+SENDMAILRULEBOOK_DBMAPS+=$(HOST_DBMAPS)
+HOST_DEPENDENT_CLASSES=	local-site-addrs local-site-names
+CLASSES+=	$(HOST_DEPENDENT_CLASSES)
+
+# Define targets ##############################################################
+.PHONY:	clean
+all:		$(CONF_DBMAP_REQUIRED)
+hostmap:	$(HOST_DBMAPS)
+fresh:		clean all
+
+check:
+	@for d in $(CONF_DBMAP_REQUIRED); do \
+		if [ ! -e "`$(ECHO) $$d | $(SED) 's/\(.*\)\.db/\1/g'`" ]; then \
+			$(ECHO) "*** source file not found: $$d" ; \
+		fi ; \
+	done ;
+	@for c in $(CONF_CLASS_REQUIRED); do \
+		if [ ! -e "$$c" ]; then \
+			$(ECHO) "*** class file not found: $$c" ; \
+		fi ; \
+	done ;
+
+init-class:
+	@cd $(DIR_DST) ;
+	@for clf in $(CLASSES); do \
+		if [ ! -e "./$$clf" ]; then \
+			$(ECHO) "===> Create $$clf" ; \
+			$(TOUCH) $$clf ; \
+			$(CHOWN) $(CONF_CLASS_OWNER):$(CONF_CLASS_GROUP) $$clf; \
+			$(CHMOD) $(CONF_CLASS_PERMISSION) $$clf; \
+		fi ; \
+	done ;
+
+%.db: %
+	@$(MAKE) set-lock ;
+	@cd $(DIR_DST) ;
+	@if [ -e "./$<" ]; then \
+		$(ECHO) -n "===> Making $@ ... " ;\
+		$(TEST) -f $< && $(CHOWN) $(CONF_DBMAP_OWNER):$(CONF_DBMAP_GROUP) $< ; \
+		$(TEST) -f $< && $(CHMOD) $(CONF_DBMAP_PERMISSION) $< ; \
+		$(TEST) -f $@ && $(CHOWN) $(CONF_DBMAP_OWNER):$(CONF_DBMAP_GROUP) $@ ; \
+		$(TEST) -f $@ && $(CHMOD) $(CONF_DBMAP_PERMISSION) $@ ; \
+		$(MAKEMAP) $(CONF_DBMAP_FORMAT) $@ < $< ; \
+		$(CHOWN) $(CONF_DBMAP_OWNER):$(CONF_DBMAP_GROUP) $@ ; \
+		$(CHMOD) $(CONF_DBMAP_PERMISSION) $@ ; \
+		$(ECHO) '[done]' ;\
+	fi ;
+	@$(MAKE) release-lock ;
+
+temp:
+	@$(ECHO) "Making temporary directory -> $(DIR_TMP)" ;\
+	$(MKDIR) $(DIR_TMP) ;
+
+set-lock:
+	@if [ -e $(CF_LOCKFILE) ]; then \
+		$(ECHO) "Can not create a lockfile -> $(CF_LOCKFILE)" ;\
+		exit 1 ;\
+	else \
+		$(TOUCH) $(CF_LOCKFILE) && $(ECHO) "Create a lockfile -> $(CF_LOCKFILE)" ;\
+	fi;
+
+release-lock:
+	$(RM) $(CF_LOCKFILE) 2> /dev/null ;
+
+distclean: clean
+	for db in $(SENDMAILRULEBOOK_DBMAPS); do \
+		if [ -e "./$$db" ]; then \
+			$(ECHO) "Remove $$db"; \
+			$(RM) $$db; \
+		fi ; \
+	done ;
+
+clean:
+	$(RM) ./*~ ; \
+	$(RM) ./*.bak ; \
+	$(RM) ./*.tmp ; \
+	$(TEST) -d $(DIR_TMP) && $(RM) -r $(DIR_TMP) || :;
+
+
+
+
+

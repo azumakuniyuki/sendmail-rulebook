@@ -1,0 +1,7 @@
+			SENDMAIL-RULEBOOK RELEASE NOTES
+	$Id: RELEASE_NOTES,v 5.31 2008/04/09 19:41:09 ak Exp $
+-------------------------------------------------------------------------------
+
+5.15.0		2013/xx/yy
+  * Import an excavated CVS repository as a git repository.
+

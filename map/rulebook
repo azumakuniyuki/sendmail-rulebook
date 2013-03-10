@@ -1,0 +1,58 @@
+###  $Id: rulebook,v 5.25 2008/03/16 14:17:30 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       rulebook -- Switch box of Sendmail-Rulebook filters             ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       List of Sendmail-Rulebook filter names  for the control of each ###
+###       rules. It is a core database of Sendmail-Rulebook.  It controls ###
+###       a execution of a ruleset  by using ON/OFF/LOG/TEST RHSes.       ###
+###       This database map is defined at lib/rulebook.m4, is referred in ###
+###       ``can'' ruleset.                                                ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       can                                                             ###
+###                                                                       ###
+###  MAKEMAP                                                              ###
+###       % cd /etc/mail/map                                              ###
+###       % test -e Makefile && gmake rulebook.db || \                    ###
+###         makemap hash rulebook.db < rulebook                           ###
+###                                                                       ###
+###  FORMAT                                                               ###
+###       LHS           = FILTER-NAME                                     ###
+###                     = FILTER-NAME ":" IP-ADDRESS                      ###
+###                     = FILTER-NAME "@" SENDER-DOMAIN                   ###
+###       FILTER-NAME   = Filter Name / [0-9A-Za-z_]+                     ###
+###       IP-ADDRESS    = IPv4 Address / [.0-9]+                          ###
+###       SENDER-DOMAIN = Sender Domain / [.0-9A-Za-z]+                   ###
+###                                                                       ###
+###       RHS           = RS-SWITCH                                       ###
+###       RS-SWITCH     = "ON"    -- Enable Its Filter                    ###
+###                     = "OFF"   -- Disable Its Filter                   ###
+###                     = "LOG"   -- Enable Its Filter with syslog.       ###
+###                     = "TEST"  -- Enable Its Filter with test mode     ###
+###                                                                       ###
+###  RHS VALUES                                                           ###
+###       OFF        -- 00000000 (  0)                                    ###
+###       ON         -- 00000001 (  1)                                    ###
+###       LOG        -- 00000011 (  3)                                    ###
+###       TEST       -- 10000111 (135)                                    ###
+###                                                                       ###
+###  BIT ASSIGNMENT                                                       ###
+###       1st -- (  1) On or Off, executable bit.                         ###
+###       2nd -- (  2) Logging bit.                                       ###
+###       3rd -- (  4) Test bit. ruleset test mode.                       ###
+###       4th -- (  8) Not assinged.                                      ###
+###       5th -- ( 16) Not assigned.                                      ###
+###       6th -- ( 32) Not assigned.                                      ###
+###       7th -- ( 64) Not assigned.                                      ###
+###       8th -- (128) Skip bit, execute ruleset but no rejection.        ###
+###                                                                       ###
+#############################################################################
+countryroads		OFF
+lhsbl			ON
+localblackhole		OFF
+rhsbl			OFF
+sendermt		OFF
+goodnight		OFF

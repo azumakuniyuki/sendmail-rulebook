@@ -1,0 +1,83 @@
+			SENDMAIL-RULEBOOK
+	$Id: RULEBOOK.README,v 5.27 2008/03/15 23:59:41 ak Exp $
+---------------------------------------------------------------------------
+ __  __       _         __ _ _      
+|  \/  | __ _| | _____ / _(_) | ___ 
+| |\/| |/ _` | |/ / _ \ |_| | |/ _ \
+| |  | | (_| |   <  __/  _| | |  __/
+|_|  |_|\__,_|_|\_\___|_| |_|_|\___|
+                                    
+
+* Makefile
+    This is a makefile for the sendmail-rulebook.  It is Useful to build db
+    maps (*.db files),  to fetch class files as a new file, to update data-
+    base maps from master sites.
+
+* make targets of `Makefile'
+    hostmap:
+        Create the following database map files: the ppptable,the sendermt.
+
+    check:
+        Check whether or not  required files  which are defined  in the
+        sendmail.cf exist.
+
+    init-class:
+        Create all class files as a empty file if it doesn't exist.
+
+    *.db:
+        Run makemap a specified database map.
+
+    clean:  Remove temporary files and directories.
+
+     _       _        _                                                
+  __| | __ _| |_ __ _| |__   __ _ ___  ___   _ __ ___   __ _ _ __  ___ 
+ / _` |/ _` | __/ _` | '_ \ / _` / __|/ _ \ | '_ ` _ \ / _` | '_ \/ __|
+| (_| | (_| | || (_| | |_) | (_| \__ \  __/ | | | | | | (_| | |_) \__ \
+ \__,_|\__,_|\__\__,_|_.__/ \__,_|___/\___| |_| |_| |_|\__,_| .__/|___/
+                                                            |_|        
+
+rulebook
+    The name list of sendmail features  for the control of each ruleset. It
+    is the core database  of the sendmail-rulebook system.  It controls the 
+    execution of the ruleset by using following RHS: ON/OFF/LOG/TEST/SCORE.
+    This database map is defined at the lib_rulebook.m4, is referred in the
+    isExecutable.
+
+cctable
+    The list of ISO-3166 Country Codes(A2 Codes).  It's useful to accept or
+    reject connections by the country name (A2 Code) . This database map is
+    referred in ccCtl ruleset.
+
+dnszonetable
+    The list of  DNS-Based Blocklist, Whitelist,  and IP GeoLocation zones. 
+    The dnszonetable hold some LHSBLs (Left-Hand-Side Block lists, IP-Based
+    Listing), RHSBLs (Right-Hand-Side Block Lists, Hostname-Based Listing),
+    LHSWLs (White lists), and RHSWLs (White lists).  Ruleset dnszCtl, lhsbl 
+    rhsbl and ccCtl refer this database map.
+
+sendermt
+    The sendermt is the mailertable.  Sendmail decides a next host or a de-
+    livery agent by  the envelope sender address.  This database map is de-
+    fined at the sendermt.m4, is referred in the sendermt ruleset.
+
+zzz 
+    Database map zzz defines  sleeping time of each sender, each recipient.
+    Sendmail decides whether to delivery or not by using this database map.
+    This database map is defined at sleeping_dictionary.m4,  is referred in
+    sleepingDictionary ruleset.
+
+      _                  __ _ _           
+  ___| | __ _ ___ ___   / _(_) | ___  ___ 
+ / __| |/ _` / __/ __| | |_| | |/ _ \/ __|
+| (__| | (_| \__ \__ \ |  _| | |  __/\__ \
+ \___|_|\__,_|___/___/ |_| |_|_|\___||___/
+                                          
+
+local-site-addrs
+    The list of IPv4 addresses which are in the local site. These addresses
+    are loaded to the class macro {lsAddr} when sendmail starting.
+	
+local-site-names
+    The list of domains which are in the local site. The domains are loaded
+    to  the class macro {lsHost} when sendmail starting. 
+

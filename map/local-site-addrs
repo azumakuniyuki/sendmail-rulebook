@@ -1,0 +1,16 @@
+###  $Id: local-site-addrs,v 5.15 2008/04/07 22:07:32 ak Exp $
+#############################################################################
+###                                                                       ###
+###  NAME                                                                 ###
+###       local-site-addrs -- List of local site's IP addresses           ###
+###                                                                       ###
+###  DESCRIPTION                                                          ###
+###       List of IPv4 addresses  which are in the local site. The IP ad- ###
+###       dresses are loaded to the class macro {lsAddr} when sendmail(8) ###
+###       starts. This class macro is defined at lib/rulebook.m4 file.    ###
+###                                                                       ###
+###  REFERRED IN                                                          ###
+###       islocalca                                                       ###
+###                                                                       ###
+#############################################################################
+127.0.0.1
